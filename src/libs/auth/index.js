@@ -1,7 +1,8 @@
 import { jwtVerify } from "jose";
 
 const getJwtSecretKey = () => {
-  const secretKey = process.env.JWT_SECRET_KEY;
+  const secretKey = "ADHASDSAKFDSF";
+  console.log("secretKey", secretKey);
   if (!secretKey) {
     throw new Error("JWT_SECRET_KEY is not defined");
   }
