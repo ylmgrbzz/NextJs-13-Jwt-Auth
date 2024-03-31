@@ -24,4 +24,6 @@ export async function POST(request) {
 
     return response;
   }
+
+  return NextResponse.json({ succcess: false });
 }
