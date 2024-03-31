@@ -29,7 +29,8 @@ export async function middleware(request) {
   }
 
   if (!hasVerifiedToken) {
-    return NextResponse.redirect(new URL("http://localhost:3000/login"), url);
+    const searchParams = new URLSearchParams(nextUrl.searchParams);
+    return NextResponse.redirect(new URL(`/login?${searchParams}`), url);
   }
 
   return NextResponse.next();
