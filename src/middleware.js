@@ -1,7 +1,7 @@
-import { verifyJwtToken } from "./libs/auth";
 import { NextResponse } from "next/server";
+import { verifyJwtToken } from "@/libs/auth";
 
-const AUTH_PAGES = ["/login", "/panel", "/register", "/forgot-password"];
+const AUTH_PAGES = ["/login", "/register"];
 
 const isAuthPages = (url) => AUTH_PAGES.some((page) => page.startsWith(url));
 
@@ -9,33 +9,33 @@ export async function middleware(request) {
   const { url, nextUrl, cookies } = request;
   const { value: token } = cookies.get("token") ?? { value: null };
 
-  console.log("token", token);
   const hasVerifiedToken = token && (await verifyJwtToken(token));
+  const isAuthPageRequested = isAuthPages(nextUrl.pathname);
 
-  console.log("hasVerifiedToken", hasVerifiedToken);
-
-  const isAuthPageRequsted = isAuthPages(nextUrl.pathname);
-
-  if (isAuthPageRequsted) {
-    if (hasVerifiedToken) {
+  if (isAuthPageRequested) {
+    if (!hasVerifiedToken) {
       const response = NextResponse.next();
+      response.cookies.delete("token");
       return response;
     }
-    const response = NextResponse.redirect(
-      new URL("http://localhost:3000/"),
-      url
-    );
+
+    const response = NextResponse.redirect(new URL(`/`, url));
     return response;
   }
 
   if (!hasVerifiedToken) {
     const searchParams = new URLSearchParams(nextUrl.searchParams);
-    return NextResponse.redirect(new URL(`/login?${searchParams}`), url);
+    searchParams.set("next", nextUrl.pathname);
+
+    const response = NextResponse.redirect(
+      new URL(`/login?${searchParams}`, url)
+    );
+    response.cookies.delete("token");
+
+    return response;
   }
 
   return NextResponse.next();
 }
 
-export const config = {
-  matcher: ["/login", "/panel"],
-};
+export const config = { matcher: ["/login", "/panel/:path*"] };

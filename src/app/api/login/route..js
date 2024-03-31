@@ -1,29 +1,33 @@
 import { SignJWT } from "jose";
-import { getJwtSecretKey } from "../../../libs/auth/index.js";
 import { NextResponse } from "next/server";
+import { getJwtSecretKey } from "@/libs/auth";
 
 export async function POST(request) {
   const body = await request.json();
-  console.log(body);
 
   if (body.username === "admin" && body.password === "admin") {
-    const jwt = await new SignJWT({
-      usernamew: body.username,
+    const token = await new SignJWT({
+      username: body.username,
       role: "admin",
     })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime("2h")
+      .setExpirationTime("30s")
       .sign(getJwtSecretKey());
 
-    console.log(jwt);
+    const response = NextResponse.json(
+      { success: true },
+      { status: 200, headers: { "content-type": "application/json" } }
+    );
 
-    const response = NextResponse.json({
-      succcess: true,
+    response.cookies.set({
+      name: "token",
+      value: token,
+      path: "/",
     });
 
     return response;
   }
 
-  return NextResponse.json({ succcess: false });
+  return NextResponse.json({ success: false });
 }

@@ -1,6 +1,11 @@
 "use client";
 
+import { useRouter, useSearchParams } from "next/navigation";
+
 export default function LoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -8,16 +13,19 @@ export default function LoginPage() {
     const username = formData.get("username");
     const password = formData.get("password");
 
-    const response = await fetch("/api/login", {
+    const res = await fetch("/api/login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({ username, password }),
     });
+    const { success } = await res.json();
 
-    const data = await response.json();
-    console.log(data);
+    if (success) {
+      const nextUrl = searchParams.get("next");
+      router.push(nextUrl ?? "/");
+      router.refresh();
+    } else {
+      alert("Login failed");
+    }
   };
 
   return (
