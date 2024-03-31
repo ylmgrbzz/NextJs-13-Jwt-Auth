@@ -14,6 +14,20 @@ export async function middleware(request) {
 
   console.log("hasVerifiedToken", hasVerifiedToken);
 
+  const isAuthPageRequsted = isAuthPages(nextUrl.pathname);
+
+  if (isAuthPageRequsted) {
+    if (hasVerifiedToken) {
+      const response = NextResponse.next();
+      return response;
+    }
+    const response = NextResponse.redirect(
+      new URL("http://localhost:3000/"),
+      url
+    );
+    return response;
+  }
+
   if (!hasVerifiedToken) {
     return NextResponse.redirect(new URL("http://localhost:3000/login"), url);
   }
